@@ -22,6 +22,18 @@ const routes = [
         //   auth: 'jwt',
         // }
       },
+        // Routes for user authentication and profile handling
+    {
+
+     method: 'POST',
+     path: '/login',
+     handler: loginHandler,
+    },
+    {
+    method: 'POST',
+    path: '/register',
+    handler: registerHandler,
+  },
 ]
 
 module.exports = routes;
