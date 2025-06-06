@@ -69,3 +69,5 @@ const inputArsipAkademik = async (request, h) => {
       .code(500);
   }
 };
+
+module.exports = { inputArsipAkademik };
