@@ -1,4 +1,6 @@
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, PutCommand, ScanCommand } = require("@aws-sdk/lib-dynamodb");
 require("dotenv").config();
 
 // Inisialisasi S3 Client
@@ -39,7 +41,18 @@ const uploadToS3 = async (fileName, fileBuffer, contentType) => {
   }
 };
 
+const dynamoDBClient = new DynamoDBClient({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_DYNAMODB,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_DYNAMODB,
+  },
+});
+
+const docClient = DynamoDBDocumentClient.from(dynamoDBClient);
+
 module.exports = {
   s3Client,
+  docClient,
   uploadToS3,
 };

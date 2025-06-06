@@ -3,18 +3,9 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { nanoid } = require("nanoid");
 const mime = require("mime-types");
 const dayjs = require("dayjs");
-const { uploadToS3 } = require("../../utils/s3Client"); // hanya ini sekarang
+const { uploadToS3, docClient } = require("../../utils/AWS-Client"); // hanya ini sekarang
 require("dotenv").config();
 
-// DynamoDB Client
-const ddbClient = new DynamoDBClient({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_DYNAMODB,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_DYNAMODB,
-  },
-});
-const docClient = DynamoDBDocumentClient.from(ddbClient);
 
 const inputIzinHandler = async (request, h) => {
   const { keterangan, file } = request.payload;

@@ -3,6 +3,7 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, PutCommand, ScanCommand } = require("@aws-sdk/lib-dynamodb");
 const { nanoid } = require("nanoid");
 const bcrypt = require("bcrypt");
+const { docClient } = require("../../utils/AWS-Client"); 
 
 /**
  * Handler function to register a new user in DynamoDB.
@@ -13,16 +14,6 @@ const bcrypt = require("bcrypt");
  */
 const registerHandler = async (request, h) => {
   const { nama, email, password } = request.payload;
-
-  const client = new DynamoDBClient({
-    region: process.env.AWS_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_DYNAMODB,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_DYNAMODB,
-    },
-  });
-
-  const docClient = DynamoDBDocumentClient.from(client);
 
   try {
     // Check if the email already exists
