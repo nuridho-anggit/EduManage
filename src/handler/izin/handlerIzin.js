@@ -73,11 +73,15 @@ const inputIzinHandler = async (request, h) => {
 const getIzinSiswaHandler = async (request, h) => {
   const { user } = request.auth.credentials;
   const role = user.role;
+  const namaa = user.nama;
   const userId = user.userId || user.UserId;
 
   if (role !== "siswa") {
-    return h.response({ status: "fail", message: "Akses ditolak" }).code(403);
+    return h.response({ status: "fail", data:{namaa, role},message: "Akses ditolak" }).code(403);
   }
+
+  // BUG : meskipun dari sisi database itu rolenya sudah siswa.. disini masih terdeteksi user
+  // TODO : FIX this BUG !
 
   try {
     const result = await docClient.send(
@@ -108,6 +112,9 @@ const getIzinGuruHandler = async (request, h) => {
   if (role !== "guru") {
     return h.response({ status: "fail", message: "Akses ditolak" }).code(403);
   }
+
+  // BUG : meskipun dari sisi database itu rolenya sudah guru.. disini masih terdeteksi user
+  // TODO : FIX this BUG !
 
   try {
     const result = await docClient.send(
