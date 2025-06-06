@@ -6,7 +6,6 @@ const { inputIzinHandler, getIzinSiswaHandler, getIzinGuruHandler } = require('.
 
 
 const routes = [
-
   {
     method: 'GET',
     path: '/',
@@ -23,7 +22,6 @@ const routes = [
       auth: 'jwt',
     }
   },
-  // Routes for user authentication and profile handling
   {
 
     method: 'POST',
@@ -66,6 +64,14 @@ const routes = [
       auth: 'jwt',
     },
   },
+  {
+    method: 'PUT',
+    path: '/profile',
+    handler: updateProfileHandler,
+    options: {
+      auth: 'jwt',
+    }
+  }
 ]
 
 module.exports = routes;

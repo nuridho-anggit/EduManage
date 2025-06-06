@@ -26,7 +26,7 @@ const inputIzinHandler = async (request, h) => {
   try {
     const contentType = file.hapi.headers["content-type"];
     const fileExtension = mime.extension(contentType);
-    const fileName = `izin-${nanoid(8)}.${fileExtension}`;
+    const fileName = `${keterangan}-${nanoid(8)}.${fileExtension}`;
 
     // Read file buffer
     const chunks = [];
@@ -36,7 +36,7 @@ const inputIzinHandler = async (request, h) => {
     const fileBuffer = Buffer.concat(chunks);
 
     // Upload to S3 dan dapatkan URL publik
-    const fileLocation = await uploadToS3(process.env.AWS_S3_BUCKET_NAME_SURAT_IZIN, userUploader, fileName, fileBuffer, contentType);
+    const fileLocation = await uploadToS3Private(process.env.AWS_S3_BUCKET_NAME_SURAT_IZIN, userUploader, fileName, fileBuffer, contentType);
 
     // Simpan data izin ke DynamoDB
     const izinId = `izin-${nanoid(12)}`;

@@ -1,9 +1,9 @@
 require("dotenv").config();
-const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { DynamoDBDocumentClient, PutCommand, ScanCommand } = require("@aws-sdk/lib-dynamodb");
 const { nanoid } = require("nanoid");
 const bcrypt = require("bcrypt");
 const { docClient } = require("../../utils/AWS-Client"); 
+
+const { ScanCommand, GetCommand, PutCommand } = require("@aws-sdk/lib-dynamodb");
 
 /**
  * Handler function to register a new user in DynamoDB.
@@ -13,7 +13,7 @@ const { docClient } = require("../../utils/AWS-Client");
  * @returns {Object} - Response indicating success or failure.
  */
 const registerHandler = async (request, h) => {
-  const { nama, email, password } = request.payload;
+  const { nama, email, password, nomorTelepon, alamat, tanggalLahir, role} = request.payload;
 
   try {
     // Check if the email already exists
@@ -42,7 +42,10 @@ const registerHandler = async (request, h) => {
       nama,
       email,
       password: hashedPassword,
-      role: "user", // Default role
+      role, // Default role
+      nomorTelepon,
+      alamat,
+      tanggalLahir
     };
 
     const putCommand = new PutCommand({
