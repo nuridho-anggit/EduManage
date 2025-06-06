@@ -7,49 +7,49 @@ const { inputIzinHandler, getIzinSiswaHandler, getIzinGuruHandler } = require('.
 
 const routes = [
 
-    {
-        method: 'GET',
-        path: '/',
-        handler: (request, h) => {
-            return 'EduManage Backend us Running!';
-        },
+  {
+    method: 'GET',
+    path: '/',
+    handler: (request, h) => {
+      return 'EduManage Backend us Running!';
     },
-      {
-        
-        method: 'GET',
-        path: '/profile/{UserId}',
-        handler: getProfileHandler,
-        // options: {
-        //   auth: 'jwt',
-        // }
-      },
-        // Routes for user authentication and profile handling
-    {
+  },
+  {
 
-     method: 'POST',
-     path: '/login',
-     handler: loginHandler,
-    },
-    {
+    method: 'GET',
+    path: '/profile',
+    handler: getProfileHandler,
+    options: {
+      auth: 'jwt',
+    }
+  },
+  // Routes for user authentication and profile handling
+  {
+
+    method: 'POST',
+    path: '/login',
+    handler: loginHandler,
+  },
+  {
     method: 'POST',
     path: '/register',
     handler: registerHandler,
   },
   {
-  method: 'POST',
-  path: '/izin',
-  options: {
-    payload: {
-      output: 'stream',
-      parse: true,
-      allow: 'multipart/form-data',
-      multipart: true,
-      maxBytes: 10 * 1024 * 1024, // batas 10MB (opsional)
-    },
-    auth: 'jwt', // atau sesuai strategi yang kamu pakai
-    handler: inputIzinHandler,
-  }
-},
+    method: 'POST',
+    path: '/izin',
+    options: {
+      payload: {
+        output: 'stream',
+        parse: true,
+        allow: 'multipart/form-data',
+        multipart: true,
+        maxBytes: 10 * 1024 * 1024, // batas 10MB (opsional)
+      },
+      auth: 'jwt', // atau sesuai strategi yang kamu pakai
+      handler: inputIzinHandler,
+    }
+  },
   {
     method: 'GET',
     path: '/izin/siswa',
