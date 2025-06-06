@@ -1,6 +1,8 @@
 const { PutCommand, QueryCommand, DynamoDBDocumentClient } = require("@aws-sdk/lib-dynamodb");
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { nanoid } = require("nanoid");
+const { ScanCommand } = require("@aws-sdk/lib-dynamodb");
+
 const mime = require("mime-types");
 const dayjs = require("dayjs");
 const { uploadToS3Private, docClient } = require("../../utils/AWS-Client"); // hanya ini sekarang
@@ -15,6 +17,7 @@ const inputIzinHandler = async (request, h) => {
   const nama = user.nama;
   const role = user.role;
   const userUploader = user.userId;
+  const nomorIzinId = nanoid(8);
 
   if (!file || !file.hapi || !file.hapi.headers) {
     return h.response({
@@ -26,7 +29,7 @@ const inputIzinHandler = async (request, h) => {
   try {
     const contentType = file.hapi.headers["content-type"];
     const fileExtension = mime.extension(contentType);
-    const fileName = `${keterangan}-${nanoid(8)}.${fileExtension}`;
+    const fileName = `${keterangan}-${nomorIzinId}.${fileExtension}`;
 
     // Read file buffer
     const chunks = [];
@@ -39,7 +42,7 @@ const inputIzinHandler = async (request, h) => {
     const fileLocation = await uploadToS3Private(process.env.AWS_S3_BUCKET_NAME_SURAT_IZIN, userUploader, fileName, fileBuffer, contentType);
 
     // Simpan data izin ke DynamoDB
-    const izinId = `izin-${nanoid(12)}`;
+    const izinId = `${keterangan}-${nomorIzinId}`;
     const tanggal = dayjs().format("YYYY-MM-DD");
 
     const newIzin = {
@@ -77,58 +80,53 @@ const getIzinSiswaHandler = async (request, h) => {
   const namaa = user.nama;
   const userId = user.userId || user.UserId;
 
+  // Check if the user's role is 'siswa'
   if (role !== "siswa") {
-    return h.response({ status: "fail", data:{namaa, role},message: "Akses ditolak" }).code(403);
+    return h.response({ status: "fail", data: { namaa, role }, message: "Akses ditolak" }).code(403);
   }
 
-  // BUG : meskipun dari sisi database itu rolenya sudah siswa.. disini masih terdeteksi user
-  // TODO: FIX this BUG !
-
-  // TODO: karena buat liat history izin pengguna.. maka dari itu menambahkan melihat folder izin berdasarkan folder userID
+  // BUG: kalau dari dynamoDB role user diubah.. maka disini tidak bisa berubah
 
   try {
     const result = await docClient.send(
-      new QueryCommand({
-        TableName: "suratIzin",
-        IndexName: "userId-index",
-        KeyConditionExpression: "userId = :uid",
+      new ScanCommand({
+        TableName: "suratIzin", // Nama tabel utama
+        FilterExpression: "userId = :userId", // Filter berdasarkan userId
         ExpressionAttributeValues: {
-          ":uid": userId,
+          ":userId": userId, // Ganti dengan userId yang dicari
         },
       })
     );
 
+    // Return the result if successful
     return h.response({ status: "success", data: result.Items }).code(200);
   } catch (error) {
     console.error("Get izin siswa error:", error);
-    return h
-      .response({ status: "fail", message: "Terjadi kesalahan server" })
-      .code(500);
+    // Return error response if there is a server-side issue
+    return h.response({ status: "fail", message: "Terjadi kesalahan server" }).code(500);
   }
 };
+
 
 const getIzinGuruHandler = async (request, h) => {
   const { user } = request.auth.credentials;
   const role = user.role;
+  const nama = user.nama;
   const userId = user.userId || user.UserId;
 
   if (role !== "guru") {
-    return h.response({ status: "fail", message: "Akses ditolak" }).code(403);
+    return h.response({ status: "fail",data:{nama, role}, message: "Akses ditolak" }).code(403);
   }
 
-  // BUG: meskipun dari sisi database itu rolenya sudah guru.. disini masih terdeteksi user
-  // TODO: FIX this BUG !
-
-  // TODO: karena buat liat history izin pengguna.. maka dari itu menambahkan melihat folder izin berdasarkan folder userID
+  // BUG: kalau dari dynamoDB role user diubah.. maka disini tidak bisa berubah
 
   try {
     const result = await docClient.send(
-      new QueryCommand({
-        TableName: "suratIzin",
-        IndexName: "userId-index",
-        KeyConditionExpression: "userId = :uid",
+      new ScanCommand({
+        TableName: "suratIzin", // Nama tabel utama
+        FilterExpression: "userId = :userId", // Filter berdasarkan userId
         ExpressionAttributeValues: {
-          ":uid": userId,
+          ":userId": userId, // Ganti dengan userId yang dicari
         },
       })
     );
