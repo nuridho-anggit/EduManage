@@ -3,7 +3,7 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { nanoid } = require("nanoid");
 const mime = require("mime-types");
 const dayjs = require("dayjs");
-const { uploadToS3, docClient } = require("../../utils/AWS-Client"); // hanya ini sekarang
+const { uploadToS3Private, docClient } = require("../../utils/AWS-Client"); // hanya ini sekarang
 require("dotenv").config();
 
 
@@ -14,6 +14,7 @@ const inputIzinHandler = async (request, h) => {
   const userId = user.userId || user.UserId;
   const nama = user.nama;
   const role = user.role;
+  const userUploader = user.userId;
 
   if (!file || !file.hapi || !file.hapi.headers) {
     return h.response({
@@ -35,7 +36,7 @@ const inputIzinHandler = async (request, h) => {
     const fileBuffer = Buffer.concat(chunks);
 
     // Upload to S3 dan dapatkan URL publik
-    const fileLocation = await uploadToS3(fileName, fileBuffer, contentType);
+    const fileLocation = await uploadToS3(process.env.AWS_S3_BUCKET_NAME_SURAT_IZIN, userUploader, fileName, fileBuffer, contentType);
 
     // Simpan data izin ke DynamoDB
     const izinId = `izin-${nanoid(12)}`;
@@ -81,7 +82,9 @@ const getIzinSiswaHandler = async (request, h) => {
   }
 
   // BUG : meskipun dari sisi database itu rolenya sudah siswa.. disini masih terdeteksi user
-  // TODO : FIX this BUG !
+  // TODO: FIX this BUG !
+
+  // TODO: karena buat liat history izin pengguna.. maka dari itu menambahkan melihat folder izin berdasarkan folder userID
 
   try {
     const result = await docClient.send(
@@ -113,8 +116,10 @@ const getIzinGuruHandler = async (request, h) => {
     return h.response({ status: "fail", message: "Akses ditolak" }).code(403);
   }
 
-  // BUG : meskipun dari sisi database itu rolenya sudah guru.. disini masih terdeteksi user
-  // TODO : FIX this BUG !
+  // BUG: meskipun dari sisi database itu rolenya sudah guru.. disini masih terdeteksi user
+  // TODO: FIX this BUG !
+
+  // TODO: karena buat liat history izin pengguna.. maka dari itu menambahkan melihat folder izin berdasarkan folder userID
 
   try {
     const result = await docClient.send(
