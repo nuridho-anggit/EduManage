@@ -116,6 +116,14 @@ const getIzinHandler = async (request, h) => {
     // Mengambil data izin dari DynamoDB
     const result = await docClient.send(new ScanCommand(params));
 
+    // Mengecek jika data arsip akademik kosong
+    if (result.Items.length === 0) {
+      return h.response({
+        status: "success",
+        message: "Anda belum pernah mengajukan Surat izin", // Pesan jika tidak ada arsip akademik
+      }).code(200); // Kode status HTTP 200 (OK)
+    }
+
     // Mengembalikan respons dengan data izin yang ditemukan
     return h.response({ status: "success", data: result.Items }).code(200); // Kode status HTTP 200 (OK)
   } catch (error) {

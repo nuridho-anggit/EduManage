@@ -110,6 +110,14 @@ const getArsipAkademikHandler = async (request, h) => {
       })
     );
 
+    // Mengecek jika data arsip akademik kosong
+    if (result.Items.length === 0) {
+      return h.response({
+        status: "success",
+        message: "Anda belum pernah menambahkan arsip akademik", // Pesan jika tidak ada arsip akademik
+      }).code(200); // Kode status HTTP 200 (OK)
+    }
+
     // Mengembalikan respons dengan data arsip akademik yang ditemukan
     return h.response({ status: "success", data: result.Items }).code(200); // Kode status HTTP 200 (OK)
   } catch (error) {
