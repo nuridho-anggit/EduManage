@@ -1,7 +1,5 @@
-const { PutCommand, QueryCommand, DynamoDBDocumentClient } = require("@aws-sdk/lib-dynamodb");
-const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { PutCommand, ScanCommand } = require("@aws-sdk/lib-dynamodb");
 const { nanoid } = require("nanoid");
-const { ScanCommand } = require("@aws-sdk/lib-dynamodb");
 
 const mime = require("mime-types");
 const dayjs = require("dayjs");
@@ -74,72 +72,6 @@ const inputIzinHandler = async (request, h) => {
   }
 };
 
-const getIzinSiswaHandler = async (request, h) => {
-  const { user } = request.auth.credentials;
-  const role = user.role;
-  const namaa = user.nama;
-  const userId = user.userId || user.UserId;
-
-  // Check if the user's role is 'siswa'
-  if (role !== "siswa") {
-    return h.response({ status: "fail", data: { namaa, role }, message: "Akses ditolak" }).code(403);
-  }
-
-  // BUG: kalau dari dynamoDB role user diubah.. maka disini tidak bisa berubah
-
-  try {
-    const result = await docClient.send(
-      new ScanCommand({
-        TableName: "suratIzin", // Nama tabel utama
-        FilterExpression: "userId = :userId", // Filter berdasarkan userId
-        ExpressionAttributeValues: {
-          ":userId": userId, // Ganti dengan userId yang dicari
-        },
-      })
-    );
-
-    // Return the result if successful
-    return h.response({ status: "success", data: result.Items }).code(200);
-  } catch (error) {
-    console.error("Get izin siswa error:", error);
-    // Return error response if there is a server-side issue
-    return h.response({ status: "fail", message: "Terjadi kesalahan server" }).code(500);
-  }
-};
-
-
-const getIzinGuruHandler = async (request, h) => {
-  const { user } = request.auth.credentials;
-  const role = user.role;
-  const nama = user.nama;
-  const userId = user.userId || user.UserId;
-
-  if (role !== "guru") {
-    return h.response({ status: "fail",data:{nama, role}, message: "Akses ditolak" }).code(403);
-  }
-
-  // BUG: kalau dari dynamoDB role user diubah.. maka disini tidak bisa berubah
-
-  try {
-    const result = await docClient.send(
-      new ScanCommand({
-        TableName: "suratIzin", // Nama tabel utama
-        FilterExpression: "userId = :userId", // Filter berdasarkan userId
-        ExpressionAttributeValues: {
-          ":userId": userId, // Ganti dengan userId yang dicari
-        },
-      })
-    );
-
-    return h.response({ status: "success", data: result.Items }).code(200);
-  } catch (error) {
-    console.error("Get izin guru error:", error);
-    return h
-      .response({ status: "fail", message: "Terjadi kesalahan server" })
-      .code(500);
-  }
-};
-
 const getIzinHandler = async (request, h) => {
   const { user } = request.auth.credentials;
   const role = user.role;
@@ -149,15 +81,21 @@ const getIzinHandler = async (request, h) => {
   // BUG: kalau dari dynamoDB role user diubah.. maka disini tidak bisa berubah
 
   try {
-    const result = await docClient.send(
-      new ScanCommand({
-        TableName: "suratIzin", // Nama tabel utama
-        FilterExpression: "userId = :userId", // Filter berdasarkan userId
-        ExpressionAttributeValues: {
-          ":userId": userId, // Ganti dengan userId yang dicari
-        },
-      })
-    );
+    // Jika role adalah 'admin', ambil semua data izin tanpa filter userId
+    const params = {
+      TableName: "suratIzin",
+    };
+
+    // Jika bukan admin, filter berdasarkan userId
+    if (role !== "admin") {
+      params.FilterExpression = "userId = :userId";
+      params.ExpressionAttributeValues = {
+        ":userId": userId, // Ganti dengan userId yang dicari
+      };
+    }
+
+    // Mengambil data izin dari DynamoDB
+    const result = await docClient.send(new ScanCommand(params));
 
     return h.response({ status: "success", data: result.Items }).code(200);
   } catch (error) {
@@ -170,7 +108,5 @@ const getIzinHandler = async (request, h) => {
 
 module.exports = {
   inputIzinHandler,
-  getIzinSiswaHandler,
-  getIzinGuruHandler,
   getIzinHandler,
 };
