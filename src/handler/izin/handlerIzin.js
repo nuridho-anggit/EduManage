@@ -140,8 +140,37 @@ const getIzinGuruHandler = async (request, h) => {
   }
 };
 
+const getIzinHandler = async (request, h) => {
+  const { user } = request.auth.credentials;
+  const role = user.role;
+  const nama = user.nama;
+  const userId = user.userId || user.UserId;
+
+  // BUG: kalau dari dynamoDB role user diubah.. maka disini tidak bisa berubah
+
+  try {
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: "suratIzin", // Nama tabel utama
+        FilterExpression: "userId = :userId", // Filter berdasarkan userId
+        ExpressionAttributeValues: {
+          ":userId": userId, // Ganti dengan userId yang dicari
+        },
+      })
+    );
+
+    return h.response({ status: "success", data: result.Items }).code(200);
+  } catch (error) {
+    console.error("Get izin guru error:", error);
+    return h
+      .response({ status: "fail", message: "Terjadi kesalahan server" })
+      .code(500);
+  }
+};
+
 module.exports = {
   inputIzinHandler,
   getIzinSiswaHandler,
   getIzinGuruHandler,
+  getIzinHandler,
 };
