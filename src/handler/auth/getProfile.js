@@ -1,16 +1,7 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, GetCommand } = require("@aws-sdk/lib-dynamodb");
+const { docClient } = require("../../utils/AWS-Client"); 
 require("dotenv").config();
-
-// Initialize DynamoDB client and DocumentClient
-const ddbClient = new DynamoDBClient({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_DYNAMODB,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_DYNAMODB,
-  },
-});
-const docClient = DynamoDBDocumentClient.from(ddbClient);
 
 /**
  * Handles user profile retrieval by extracting user ID from the JWT token.

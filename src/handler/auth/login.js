@@ -2,6 +2,7 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, ScanCommand } = require("@aws-sdk/lib-dynamodb");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../../config/token");
+const { docClient } = require("../../utils/AWS-Client"); 
 require("dotenv").config();
 
 /**
@@ -13,17 +14,6 @@ require("dotenv").config();
  */
 const loginHandler = async (request, h) => {
   const { email, password } = request.payload;
-
-  // Init DynamoDB
-  const client = new DynamoDBClient({
-    region: process.env.AWS_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_DYNAMODB,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_DYNAMODB,
-    },
-  });
-
-  const docClient = DynamoDBDocumentClient.from(client);
 
   try {
     const scanCommand = new ScanCommand({
